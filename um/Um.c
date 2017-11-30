@@ -65,6 +65,11 @@ typedef struct Instructions {
         Word lv_val;
 } Instructions;
 
+struct Segments {
+        Seq_T available_IDs;
+        Seq_T seg_array; 
+};
+
 struct UM {
         Register *registers;
         Segments segments;
@@ -160,8 +165,11 @@ static inline void read_program(UM um, char *program)
 static inline Instructions unpack_instruction(UM um)
 {
         Instructions new_instr = init_instructions();
-        Um_instruction raw_instr = UMSegment_at(um->segments, CODE_SEG, 
-                                                um->counter);
+	Segments segments = um->segments;
+	UArray_T curr_segment = Seq_get((segments->seg_array), CODE_SEG);
+        Word *word = (uint32_t *)(curr_segment->elems + (um->counter * curr_segment->size));
+        Um_instruction raw_instr = *word;
+	  //UMSegment_at(um->segments, CODE_SEG, um->counter);
         unsigned hi = OP_LSB + OP_WIDTH;
         new_instr.op = ((raw_instr << (32 - hi)) >> (32 - OP_WIDTH));
 
