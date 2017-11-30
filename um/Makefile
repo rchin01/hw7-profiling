@@ -23,7 +23,7 @@ IFLAGS = -I/comp/40/include -I/usr/sup/cii40/include/cii
 # Set debugging information, allow the c99 standard,
 # max out warnings, and use the updated include path
 # 
-CFLAGS = -g -O1 -std=c99 -Wall -Wextra -Werror -Wfatal-errors \
+CFLAGS = -g -O2 -std=c99 -Wall -Wextra -Werror -Wfatal-errors \
 -pedantic $(IFLAGS)
 
 # Linking flags
@@ -34,7 +34,7 @@ LDFLAGS = -g -L/comp/40/lib64 -L/usr/sup/cii40/lib64
 # Libraries needed for linking
 # All programs cii40 (Hanson binaries) and *may* need -lm (math)
 # arith40 is for this assignment, netpbm is needed for pnm
-LDLIBS = -lcii40-O1 -larith40 -lnetpbm -lbitpack -lm -l40locality -lum-dis -lcii 
+LDLIBS = -lcii40-O2 -larith40 -lnetpbm -lbitpack -lm -l40locality -lum-dis -lcii 
 
 # Collect all .h files in your directory.
 # This way, you can never forget to add
