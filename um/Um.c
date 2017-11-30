@@ -16,6 +16,8 @@
 #include <sys/stat.h>
 #include <um-dis.h>
 #include <string.h>
+#include <stdbool.h>
+#include <inttypes.h>
 #include "bitpack.h"
 
 /*******************************************************
@@ -162,7 +164,9 @@ static inline Instructions unpack_instruction(UM um)
         Instructions new_instr = init_instructions();
         Um_instruction raw_instr = UMSegment_at(um->segments, CODE_SEG, 
                                                 um->counter);
-        new_instr.op = Bitpack_getu(raw_instr, OP_WIDTH, OP_LSB);
+        //new_instr.op = Bitpack_getu(raw_instr, OP_WIDTH, OP_LSB);
+        unsigned hi = OP_LSB + OP_WIDTH;
+        new_instr.op = ((raw_instr << (32 - hi)) >> (32 - OP_WIDTH));
         curr_op = new_instr.op;
         if (curr_op == HALT)
                 return new_instr;
@@ -172,7 +176,7 @@ static inline Instructions unpack_instruction(UM um)
         } else if (curr_op == LOADP || curr_op == MAP) {
                 new_instr.rb = Bitpack_getu(raw_instr, REG_WIDTH, B_LSB);
                 new_instr.rc = Bitpack_getu(raw_instr, REG_WIDTH, C_LSB);
-        } else if (curr_op == UNMAP || curr_op == OUT || curr_op == IN) {
+        } else if (curr_op == UNMAP || curr_op == OUT || new_instr.op == IN) {
                 new_instr.rc = Bitpack_getu(raw_instr, REG_WIDTH, C_LSB);
         } else {
                 new_instr.ra = Bitpack_getu(raw_instr, REG_WIDTH, A_LSB);

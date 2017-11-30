@@ -55,7 +55,7 @@ all: um
 
 ## Linking step (.o -> executable program)
 
-um: Um_registers.o Um_segments.o Um.o main.o
+um: Um_instructions.o Um.o main.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 clean:
