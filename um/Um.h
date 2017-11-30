@@ -15,8 +15,9 @@
 #ifndef UM_H
 #define UM_H
 
-#include "Um_segments.h"
-#include "Um_registers.h"
+//#include "Um_segments.h"
+//#include "Um_registers.h"
+#include "Um_instructions.h"
 #include <stdio.h>
 #include <stdlib.h>
 
