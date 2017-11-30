@@ -18,7 +18,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <inttypes.h>
-#include "bitpack.h"
 
 /*******************************************************
  *
@@ -160,29 +159,43 @@ static inline void read_program(UM um, char *program)
  */
 static inline Instructions unpack_instruction(UM um)
 {
-        Um_opcode curr_op;
         Instructions new_instr = init_instructions();
         Um_instruction raw_instr = UMSegment_at(um->segments, CODE_SEG, 
                                                 um->counter);
-        //new_instr.op = Bitpack_getu(raw_instr, OP_WIDTH, OP_LSB);
         unsigned hi = OP_LSB + OP_WIDTH;
         new_instr.op = ((raw_instr << (32 - hi)) >> (32 - OP_WIDTH));
-        curr_op = new_instr.op;
-        if (curr_op == HALT)
+
+        if (new_instr.op == HALT)
                 return new_instr;
-        if (curr_op == LV) {
-                new_instr.lv_ra = Bitpack_getu(raw_instr, REG_WIDTH, A_LV_LSB);
-                new_instr.lv_val = Bitpack_getu(raw_instr, LV_WIDTH, LV_LSB);
-        } else if (curr_op == LOADP || curr_op == MAP) {
-                new_instr.rb = Bitpack_getu(raw_instr, REG_WIDTH, B_LSB);
-                new_instr.rc = Bitpack_getu(raw_instr, REG_WIDTH, C_LSB);
-        } else if (curr_op == UNMAP || curr_op == OUT || new_instr.op == IN) {
-                new_instr.rc = Bitpack_getu(raw_instr, REG_WIDTH, C_LSB);
+
+        if (new_instr.op == LV) {
+                hi = A_LV_LSB + REG_WIDTH;
+                new_instr.lv_ra = ((raw_instr << (32 - hi)) >> (32 - REG_WIDTH));
+                hi = LV_LSB + LV_WIDTH;
+                new_instr.lv_val = ((raw_instr << (32 - hi)) >> (32 - LV_WIDTH));
+
+        } else if (new_instr.op == LOADP || new_instr.op == MAP) {
+                hi = B_LSB + REG_WIDTH;
+                new_instr.rb = ((raw_instr << (32 - hi)) >> (32 - REG_WIDTH));
+
+                hi = C_LSB + REG_WIDTH;
+                new_instr.rc = ((raw_instr << (32 - hi)) >> (32 - REG_WIDTH));
+
+        } else if (new_instr.op == UNMAP || new_instr.op == OUT || new_instr.op == IN) {
+                hi = C_LSB + REG_WIDTH;
+                new_instr.rc = ((raw_instr << (32 - hi)) >> (32 - REG_WIDTH));
+
         } else {
-                new_instr.ra = Bitpack_getu(raw_instr, REG_WIDTH, A_LSB);
-                new_instr.rb = Bitpack_getu(raw_instr, REG_WIDTH, B_LSB);
-                new_instr.rc = Bitpack_getu(raw_instr, REG_WIDTH, C_LSB);
+                hi = A_LSB + REG_WIDTH;
+                new_instr.ra = ((raw_instr << (32 - hi)) >> (32 - REG_WIDTH));
+                
+                hi = B_LSB + REG_WIDTH;
+                new_instr.rb = ((raw_instr << (32 - hi)) >> (32 - REG_WIDTH));
+                
+                hi = C_LSB + REG_WIDTH;
+                new_instr.rc = ((raw_instr << (32 - hi)) >> (32 - REG_WIDTH));
         } 
+
         return new_instr;
 }
 
