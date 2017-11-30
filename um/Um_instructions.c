@@ -189,7 +189,8 @@ void UMSegment_free(Segments segments)
 Word UMSegment_at(Segments segments, Segment_ID ID, int address)
 {
         UArray_T curr_segment = Seq_get(segments->seg_array, ID);
-        Word *word = UArray_at(curr_segment, address);
+        Word *word = (uint32_t *)(curr_segment->elems + (address * curr_segment->size));
+                        //UArray_at(curr_segment, address);
         return *word;
 }
 
@@ -206,7 +207,8 @@ void UMSegment_insert(Segments segments, Segment_ID ID, int address,
                       Word value)
 {
         UArray_T curr_segment = Seq_get(segments->seg_array, ID);
-        Word *word = UArray_at(curr_segment, address);
+        Word *word = (uint32_t *)(curr_segment->elems + (address * curr_segment->size));
+                        //UArray_at(curr_segment, address);
         *word = value;
 }
 

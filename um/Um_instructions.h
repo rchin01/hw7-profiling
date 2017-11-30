@@ -5,6 +5,12 @@
 #include "seq.h"
 #include "uarray.h"
 
+struct UArray_T {
+        int length;
+        int size;
+        char *elems;
+};
+
 typedef uint32_t Register;
 
 Register *UMRegister_new();
