@@ -233,6 +233,11 @@ static inline void UM_execute(UM um, Instructions instr)
         Word *b_valp = &(um->registers[rb]);
         Word *c_valp = &(um->registers[rc]);
 
+        Segments segments = um->segments;
+        UArray_T curr_segment;
+        Word *word;
+        UArray_T src_segment, dest_segment;
+
         switch (instr.op) {
                 case CMOV:
                         if (c_val == 0)
@@ -241,15 +246,17 @@ static inline void UM_execute(UM um, Instructions instr)
                         //UMRegister_move(um->registers, ra, rb);
                         break;
                 case SLOAD:
-                        Segments segments = um->segments;
-                        UArray_T curr_segment = Seq_get((segments->seg_array), b_val);
-                        load_word = (uint32_t *)(curr_segment->elems + (c_val * curr_segment->size));
+                        curr_segment = Seq_get((segments->seg_array), b_val);
+                        load_word = *(uint32_t *)(curr_segment->elems + (c_val * curr_segment->size));
                         //load_word = UMSegment_at(um->segments, b_val, c_val);
-                        *a_valp = *load_word;
+                        *a_valp = load_word;
                         //UMRegister_put(um->registers, ra, load_word);
                         break;
                 case SSTORE:
-                        UMSegment_insert(um->segments, a_val, b_val, c_val);
+                        curr_segment = Seq_get(segments->seg_array, a_val);
+                        word = (uint32_t *)(curr_segment->elems + (b_val * curr_segment->size));
+                        *word = c_val;
+                        //UMSegment_insert(um->segments, a_val, b_val, c_val);
                         break;
                 case ADD: 
                         *a_valp = *b_valp + *c_valp;
@@ -289,8 +296,17 @@ static inline void UM_execute(UM um, Instructions instr)
                         //UMRegister_put(um->registers, rc, in);
                         break;
                 case LOADP:
-                        if (b_val != CODE_SEG)
-                                UMSegment_copy(um->segments, b_val, CODE_SEG);
+                        if (b_val != CODE_SEG) {
+                                src_segment = Seq_get(segments->seg_array, b_val);
+                                dest_segment = Seq_get(segments->seg_array, CODE_SEG);
+                                UArray_free(&dest_segment);
+                                Seq_put(segments->seg_array, CODE_SEG, NULL);
+                                dest_segment = UArray_copy(src_segment, 
+                                                           UArray_length(src_segment));
+                                Seq_put(segments->seg_array, CODE_SEG, dest_segment);
+                              
+                                //UMSegment_copy(um->segments, b_val, CODE_SEG);
+                        }
                         um->counter = c_val;
                         break;
                 case LV:
