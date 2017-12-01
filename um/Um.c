@@ -222,33 +222,50 @@ static inline void UM_execute(UM um, Instructions instr)
         Um_register ra = instr.ra, rb = instr.rb, rc = instr.rc;
         Um_register lv_ra = instr.lv_ra;
         Word lv_val = instr.lv_val;
-        Word a_val = UMRegister_get(um->registers, ra);
-        Word b_val = UMRegister_get(um->registers, rb);
-        Word c_val = UMRegister_get(um->registers, rc);
+        Word a_val = um->registers[ra];
+                //UMRegister_get(um->registers, ra);
+        Word b_val = um->registers[rb];
+                //UMRegister_get(um->registers, rb);
+        Word c_val = um->registers[rc];
+                //UMRegister_get(um->registers, rc);
+
+        Word *a_valp = &(um->registers[ra]);
+        Word *b_valp = &(um->registers[rb]);
+        Word *c_valp = &(um->registers[rc]);
+
         switch (instr.op) {
                 case CMOV:
                         if (c_val == 0)
                                 return;
-                        UMRegister_move(um->registers, ra, rb);
+                        *a_valp = *b_valp;
+                        //UMRegister_move(um->registers, ra, rb);
                         break;
                 case SLOAD:
-                        load_word = UMSegment_at(um->segments, b_val, c_val);
-                        UMRegister_put(um->registers, ra, load_word);
+                        Segments segments = um->segments;
+                        UArray_T curr_segment = Seq_get((segments->seg_array), b_val);
+                        load_word = (uint32_t *)(curr_segment->elems + (c_val * curr_segment->size));
+                        //load_word = UMSegment_at(um->segments, b_val, c_val);
+                        *a_valp = *load_word;
+                        //UMRegister_put(um->registers, ra, load_word);
                         break;
                 case SSTORE:
                         UMSegment_insert(um->segments, a_val, b_val, c_val);
                         break;
                 case ADD: 
-                        UMRegister_add(um->registers, ra, rb, rc);
+                        *a_valp = *b_valp + *c_valp;
+                        //UMRegister_add(um->registers, ra, rb, rc);
                         break;
                 case MUL: 
-                        UMRegister_mult(um->registers, ra, rb, rc);
+                        *a_valp = *b_valp * *c_valp;
+                        //UMRegister_mult(um->registers, ra, rb, rc);
                         break;
                 case DIV:
-                        UMRegister_div(um->registers, ra, rb, rc);
+                        *a_valp = *b_valp / *c_valp;
+                        //UMRegister_div(um->registers, ra, rb, rc);
                         break;
                 case NAND:
-                        UMRegister_nand(um->registers, ra, rb, rc);
+                        *a_valp = ~(*b_valp & *c_valp);
+                        //UMRegister_nand(um->registers, ra, rb, rc);
                         break;
                 case HALT:
                         UM_free(um);
@@ -268,7 +285,8 @@ static inline void UM_execute(UM um, Instructions instr)
                         fflush(NULL);
                         if (in == EOF)
                                 in = EOF_FLAG;
-                        UMRegister_put(um->registers, rc, in);
+                        *c_valp = in;
+                        //UMRegister_put(um->registers, rc, in);
                         break;
                 case LOADP:
                         if (b_val != CODE_SEG)
@@ -276,7 +294,8 @@ static inline void UM_execute(UM um, Instructions instr)
                         um->counter = c_val;
                         break;
                 case LV:
-                        UMRegister_put(um->registers, lv_ra, lv_val);
+                        um->registers[lv_ra] = lv_val;
+                        //UMRegister_put(um->registers, lv_ra, lv_val);
                         break;
                 }
 }
